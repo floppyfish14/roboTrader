@@ -19,3 +19,5 @@ $ python3 access-api.py
 00:59	 Adding 40941.36 to 60Min array.
 ```
 Your output should be similar to this. Enjoy!
+
+After an hour, the computer will make a decision whether to buy or sell. This decision will be displayed for you to see along with the current MSA.
