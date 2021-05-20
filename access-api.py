@@ -27,16 +27,18 @@ from decimal import *
 pwd = os.getcwd()
 
 #specify that it is binary data so nothing gets lost in translation
-API_KEY = open(pwd+'/keys/sandbox-api.key','r+b')
-API_SECRET = open(pwd+'/keys/sandbox-api.secret','r+b')
-API_PASS = open(pwd+'/keys/sandbox-api.pass','r+b')
+API_KEY = open(pwd+'/keys/sandbox-api.key','r',encoding="utf-8").read().rstrip('\n')
+API_SECRET = open(pwd+'/keys/sandbox-api.secret','r',encoding="utf-8").read().rstrip('\n')
+API_PASS = open(pwd+'/keys/sandbox-api.pass','r',encoding="utf-8").read().rstrip('\n')
 
 #create the movingAverage array
 #our bot uses this for it's calculations
 #on whether to buy or sell every hour
 movingAverageArray = array.array('f', [])
 #create a daily profit and loss array to calculate if you are winning or losing
-dailyPNLArray = array.array('f', [])
+#it is a float array to calculate down to the small decimals
+dailyUSDArray = array.array('f', [])
+dailyBTCArray = array.array('f', [])
 
 # Create custom authentication for Exchange
 class CoinbaseExchangeAuth(AuthBase):
@@ -158,7 +160,7 @@ def getPaymentMethods(url, authentication):
     # return account-id, type, and name
     lengthData = len(jsonData)
     for i in range(lengthData):
-        print("ID: {}".format(sonData[i]["id"]))
+        print("ID: {}".format(jsonData[i]["id"]))
         print("Name: {}".format(jsonData[i]["name"]))
         print("Type: {}".format(jsonData[i]["type"]))
         print()
@@ -238,16 +240,54 @@ def gatherMovingAverage(url, product="btc-usd"):
     jsonData = json.loads(r.text)
     price = jsonData["price"]
     #print("Current price of {0}: {1}".format(product,price))
-    print("\t Adding {} to 60Min array.".format(price), end="\r")
+    print("\t Adding {} to Moving Average array.".format(price), end="\r")
     movingAverageArray.append(float(price))
 
     return price
 
-"""def gatherPNL(url, auth):
+def gatherPNL(url, authentication):
+    global dailyUSDArray
+    global dailyBTCArray
     #gather numbers to determine if we profited or lost today
     #based on 24 values (1 per hour)
-    r = requests.get(url + '
-"""
+    r = requests.get(url + 'accounts/', auth=authentication)
+    jsonData = json.loads(r.text)
+    lengthData = len(jsonData)
+    for i in range(lengthData):
+        if jsonData[i]["currency"] == "USD":
+            accountUSD = jsonData[i]["id"]
+        if jsonData[i]["currency"] == "BTC":
+            accountBTC = jsonData[i]["id"]
+        else:
+            pass
+    rUSD = requests.get(url +'accounts/' + accountUSD, auth=authentication)
+    rBTC = requests.get(url +'accounts/' + accountBTC, auth=authentication)
+    jsonUSD = json.loads(rUSD.text)
+    jsonBTC = json.loads(rBTC.text)
+    balanceUSD = jsonUSD["balance"]
+    balanceBTC = jsonBTC["balance"]
+    dailyUSDArray.append(float(balanceUSD))
+    dailyBTCArray.append(float(balanceBTC))
+    return
+
+def calculatePNL(currency="USD"):
+    if currency == "USD":
+        global dailyUSDArray
+        startPNL = dailyUSDArray[0]
+        lastPNL = dailyUSDArray[-1]
+    if currency == "BTC":
+        global dailyBTCArray
+        startPNL = dailyBTCArray[0]
+        lastPNL = dailyBTCArray[-1]
+
+    PNL = lastPNL - startPNL
+    if PNL > 0:
+        print("{} -- Positive Profit: {}".format(currency,PNL))
+    elif PNL == 0:
+        print("{} -- No Profit or Loss. PNL: {}".format(currency,PNL))
+    else:
+        print("{} -- Negative Profit: {}".format(currency,PNL))
+    return
 
 def calculateMovingAverage(movingAverageArray=movingAverageArray,n=60):
     #number of series to calculate the moving average for
@@ -293,7 +333,7 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
         print("Buying {} with 2% of total Fiat. Buying Amount in USD: {}".format(coin,buyingAmount), end="\r\n")
         buyOrder(api_url, auth, float(buyingAmount))
     if float(movingAverage) <= float(currentPrice):
-        print("Selling 20% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r\n")
+        print("Selling 2% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r\n")
         sellOrder(api_url, auth, float(sellingAmount))
 
 #getAccounts(api_url, auth)
@@ -305,13 +345,30 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
 #calcMovingAverage(api_url)
 #getBalance(api_url, auth)
 while True:
-    #begging aggregating our data for future smart decisions
+    #time in seconds to wait until next polling of price
+    timeWait = 2
+    #amount of numbers to have in moving average array before
+    #making a decision
+    arrayCount = 10
+    #start off with getting current balances
+    gatherPNL(api_url, auth)
+    gatherPNL(api_url, auth)
+    #begin aggregating our data for future smart decisions
     gatherMovingAverage(api_url)
     #display a 60 second countdown for fun
-    countdown(60)
+    countdown(int(timeWait))
     #if length of array is = 60, calculate the moving average
-    if len(movingAverageArray) == 60:
+    if len(movingAverageArray) == int(arrayCount):
         calculateMovingAverage(movingAverageArray, len(movingAverageArray))
+        #delete the array to start over for the new period
         del movingAverageArray[:]
+        #gather new PNL values for calculations
+        gatherPNL(api_url, auth)
+        gatherPNL(api_url, auth)
+        #calculate whether we are profiting or losing
+        #still haven't figured out how to track loss
+        #due to trading from USD to BTC or vice versa
+        calculatePNL("BTC")
+        calculatePNL("USD")
     else:
         pass
