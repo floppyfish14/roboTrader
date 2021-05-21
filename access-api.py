@@ -358,10 +358,8 @@ while True:
     #display a 60 second countdown for fun
     countdown(int(timeWait))
     #if length of array is = 60, calculate the moving average
-    if len(movingAverageArray) == int(arrayCount):
+    if (len(movingAverageArray)/int(arrayCount)).is_integer():
         calculateMovingAverage(movingAverageArray, len(movingAverageArray))
-        #delete the array to start over for the new period
-        del movingAverageArray[:]
         #gather new PNL values for calculations
         gatherPNL(api_url, auth)
         gatherPNL(api_url, auth)
