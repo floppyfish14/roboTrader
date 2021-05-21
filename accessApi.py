@@ -201,6 +201,18 @@ def gatherMovingAverage(url, product="btc-usd"):
 
     return price
 
+def getPortfolioBalance(url, authentication):
+    global portfolioValue
+
+    priceBTC = getCurrentPrice(url)
+    totalBTC = getBalance(url, authentication, "BTC")
+    totalUSD = getBalance(url, authentication, "USD")
+    portfolioValue.append(float((priceBTC*totalBTC)+totalUSD))
+    #print("Portfolio balance is: ${}".format(portfolioValue))
+
+    return portfolioValue
+
+
 def gatherPNL(url, authentication):
     global dailyUSDArray
     global dailyBTCArray

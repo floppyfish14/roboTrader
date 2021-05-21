@@ -7,15 +7,15 @@ import os, array
 
 def main():
     #time in seconds to wait until next polling of price
-    timeWait = 2
+    timeWait = 10
 
     #amount of numbers to have in moving average array before
     #making a decision
-    arrayCount = 5
+    arrayCount = 6
 
     #start off with getting current balances
-    api.gatherPNL(api_url, auth)
-    api.gatherPNL(api_url, auth)
+    #api.gatherPNL(api_url, auth)
+    #api.gatherPNL(api_url, auth)
 
     #begin aggregating our data for future smart decisions
     api.gatherMovingAverage(api_url)
@@ -28,14 +28,15 @@ def main():
         api.calculateMovingAverage(movingAverageArray, len(movingAverageArray))
 
         #gather new PNL values for calculations
-        api.gatherPNL(api_url, auth)
-        api.gatherPNL(api_url, auth)
+        #api.gatherPNL(api_url, auth)
+        #api.gatherPNL(api_url, auth)
 
         #calculate whether we are profiting or losing
         #still haven't figured out how to track loss
         #due to trading from USD to BTC or vice versa
-        api.calculatePNL("BTC")
-        api.calculatePNL("USD")
+        #api.calculatePNL("BTC")
+        #api.calculatePNL("USD")
+        api.getPortfolioBalance(api_url, auth)
 
         #create a live chart to display
         pC.create_chart()

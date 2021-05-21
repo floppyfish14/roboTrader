@@ -19,6 +19,8 @@ movingAverageArray = array.array('f', [])
 dailyUSDArray = array.array('f', [])
 dailyBTCArray = array.array('f', [])
 
+#create a portfolio balnce array for graphing
+portfolioValue = array.array('f', [])
 
 
 class CoinbaseExchangeAuth(AuthBase):

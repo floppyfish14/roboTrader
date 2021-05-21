@@ -5,7 +5,7 @@ This is a pet project setup to see whether an automated crypto robot will outcom
 - 3. Do a quick moving sum average (MSA) using pandas (faster than numpy)
 - 4. If current price is above MSA sell, if below, buy
 - 5. Trade no more than 2% of total Bitcoin or USD
-- 6. TODO: Add a percent gain or loss function for a 24 hour period
+- 6. Chart total Portfolio Value
 
 ## To setup
 Create an account at coinbase pro. Create api keys, pass, and secret. Put these in the files specified in code in the '/keys' directory. For example, if you are using the sandbox api (for testing) it would be:
@@ -15,9 +15,9 @@ Create an account at coinbase pro. Create api keys, pass, and secret. Put these 
 
 ## To run
 ```
-$ python3 access-api.py
-00:59	 Adding 40941.36 to 60Min array.
+$ python3 main.py
+00:59	 Adding 40941.36 to Moving Average array.
 ```
 Your output should be similar to this. Enjoy!
 
-After an hour, the computer will make a decision whether to buy or sell. This decision will be displayed for you to see along with the current MSA.
+After the time specified in main.py, the computer will make a decision whether to buy or sell. This decision will be displayed for you to see along with the current MSA and a portfolio value chart.

@@ -12,7 +12,7 @@ def create_chart():
     #plot data with a legend for identification purposes
     #plx.scatter(dailyUSDArray, label = "USD PNL")
     #plx.scatter(dailyBTCArray, label = "BTC PNL")
-    plx.scatter(movingAverageArray, label = "Moving Average Array")
+    plx.plot(portfolioValue, label = "Portfolio Value USD")
     #show the chart
     plx.sleep(0.001)
     plx.show()
