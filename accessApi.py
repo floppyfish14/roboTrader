@@ -16,58 +16,14 @@ ALL request bodies should have content type application/json and be valid json
 #
 #   easy_install requests
 
-import json, hmac, hashlib, time, requests, base64, array, os
 
 #need pandas for the movingAverageArray calculation
 #supposedly it is faster than numpy
 import pandas as pd
-from requests.auth import AuthBase
-from decimal import *
 
-pwd = os.getcwd()
-
-#specify that it is binary data so nothing gets lost in translation
-API_KEY = open(pwd+'/keys/sandbox-api.key','r',encoding="utf-8").read().rstrip('\n')
-API_SECRET = open(pwd+'/keys/sandbox-api.secret','r',encoding="utf-8").read().rstrip('\n')
-API_PASS = open(pwd+'/keys/sandbox-api.pass','r',encoding="utf-8").read().rstrip('\n')
-
-#create the movingAverage array
-#our bot uses this for it's calculations
-#on whether to buy or sell every hour
-movingAverageArray = array.array('f', [])
-#create a daily profit and loss array to calculate if you are winning or losing
-#it is a float array to calculate down to the small decimals
-dailyUSDArray = array.array('f', [])
-dailyBTCArray = array.array('f', [])
+from varData import *
 
 # Create custom authentication for Exchange
-class CoinbaseExchangeAuth(AuthBase):
-    def __init__(self, api_key, secret_key, passphrase):
-        self.api_key = api_key
-        self.secret_key = secret_key
-        self.passphrase = passphrase
-
-    def __call__(self, request):
-        timestamp = str(time.time())
-        message = timestamp + request.method + request.path_url + (request.body or '')
-        message = message.encode('utf-8')
-        hmac_key = base64.b64decode(self.secret_key)
-        signature = hmac.new(hmac_key, message, hashlib.sha256)
-        signature_b64 = base64.b64encode(signature.digest()).decode('utf-8')
-
-        request.headers.update({
-            'CB-ACCESS-SIGN': signature_b64,
-            'CB-ACCESS-TIMESTAMP': timestamp,
-            'CB-ACCESS-KEY': self.api_key,
-            'CB-ACCESS-PASSPHRASE': self.passphrase,
-            'Content-Type': 'application/json'
-        })
-        return request
-
-# Use only after testing is complete!
-#api_url = 'https://api.pro.coinbase.com/'
-api_url = str("https://api-public.sandbox.pro.coinbase.com/")
-auth = CoinbaseExchangeAuth(API_KEY, API_SECRET, API_PASS)
 
 def getAccounts(url, authentication):
     # Get accounts
@@ -275,6 +231,7 @@ def calculatePNL(currency="USD"):
         global dailyUSDArray
         startPNL = dailyUSDArray[0]
         lastPNL = dailyUSDArray[-1]
+
     if currency == "BTC":
         global dailyBTCArray
         startPNL = dailyBTCArray[0]
@@ -282,11 +239,11 @@ def calculatePNL(currency="USD"):
 
     PNL = lastPNL - startPNL
     if PNL > 0:
-        print("{} -- Positive Profit: {}".format(currency,PNL))
+        print("{:>75} -- Positive Profit: {}".format(currency,PNL))
     elif PNL == 0:
-        print("{} -- No Profit or Loss. PNL: {}".format(currency,PNL))
+        print("{:>75} -- No Profit or Loss. PNL: {}".format(currency,PNL))
     else:
-        print("{} -- Negative Profit: {}".format(currency,PNL))
+        print("{:>75} -- Negative Profit: {}".format(currency,PNL))
     return
 
 def calculateMovingAverage(movingAverageArray=movingAverageArray,n=60):
@@ -330,11 +287,12 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
     #get current price of currency
     currentPrice = getCurrentPrice()
     if float(movingAverage) >= float(getCurrentPrice()):
-        print("Buying {} with 2% of total Fiat. Buying Amount in USD: {}".format(coin,buyingAmount), end="\r\n")
+        print("Buying {} with 2% of total Fiat. Buying Amount in USD: {}".format(coin,buyingAmount), end="\r")
         buyOrder(api_url, auth, float(buyingAmount))
     if float(movingAverage) <= float(currentPrice):
-        print("Selling 2% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r\n")
+        print("Selling 2% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r")
         sellOrder(api_url, auth, float(sellingAmount))
+    return
 
 #getAccounts(api_url, auth)
 #buyOrder(api_url, auth, 300)
@@ -344,29 +302,3 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
 #coinbaseTransfer(api_url, auth)
 #calcMovingAverage(api_url)
 #getBalance(api_url, auth)
-while True:
-    #time in seconds to wait until next polling of price
-    timeWait = 2
-    #amount of numbers to have in moving average array before
-    #making a decision
-    arrayCount = 10
-    #start off with getting current balances
-    gatherPNL(api_url, auth)
-    gatherPNL(api_url, auth)
-    #begin aggregating our data for future smart decisions
-    gatherMovingAverage(api_url)
-    #display a 60 second countdown for fun
-    countdown(int(timeWait))
-    #if length of array is = 60, calculate the moving average
-    if (len(movingAverageArray)/int(arrayCount)).is_integer():
-        calculateMovingAverage(movingAverageArray, len(movingAverageArray))
-        #gather new PNL values for calculations
-        gatherPNL(api_url, auth)
-        gatherPNL(api_url, auth)
-        #calculate whether we are profiting or losing
-        #still haven't figured out how to track loss
-        #due to trading from USD to BTC or vice versa
-        calculatePNL("BTC")
-        calculatePNL("USD")
-    else:
-        pass
