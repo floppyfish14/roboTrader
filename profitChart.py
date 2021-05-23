@@ -12,6 +12,8 @@ def create_chart():
     #plot data with a legend for identification purposes
     #plx.scatter(dailyUSDArray, label = "USD PNL")
     #plx.scatter(dailyBTCArray, label = "BTC PNL")
+    plx.xlabel("Time (Minutes)")
+    plx.ylabel("Portfolio Value (USD)")
     plx.plot(portfolioValue, label = "Portfolio Value USD")
     #show the chart
     plx.sleep(0.001)
