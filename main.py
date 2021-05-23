@@ -41,9 +41,9 @@ def main():
         #create a live chart to display
         pC.create_chart()
 
-    #if the moving average array is greater than 24hours old (24*60 = 1440) delete it
+    #if the moving average array is greater than 12hours old (12*60 = 720) delete it
     #this is to avoid a perpetual cycle of buying or selling
-    elif (len(movingAverageArray)/int(1440)).is_integer():
+    elif (len(movingAverageArray)/int(720)).is_integer():
         del movingAverageArray[:]
 
     else:

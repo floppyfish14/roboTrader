@@ -2,6 +2,7 @@ import plotext as plx
 from varData import *
 
 def create_chart():
+    bins = 10
     #clear terminal and plot before updating plot
     plx.clp()
     plx.clt()
@@ -12,8 +13,6 @@ def create_chart():
     #plot data with a legend for identification purposes
     #plx.scatter(dailyUSDArray, label = "USD PNL")
     #plx.scatter(dailyBTCArray, label = "BTC PNL")
-    plx.xlabel("Time (Minutes)")
-    plx.ylabel("Portfolio Value (USD)")
     plx.plot(portfolioValue, label = "Portfolio Value USD")
     #show the chart
     plx.sleep(0.001)
