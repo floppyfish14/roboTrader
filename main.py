@@ -35,7 +35,7 @@ def main():
 
     #if the moving average array is greater than 12hours old delete it
     #this is to avoid a perpetual cycle of buying or selling
-    elif (len(movingAverageArray) > dataPerHour*12:
+    elif (len(movingAverageArray) > dataPerHour*12):
         del movingAverageArray[:]
 
     else:
