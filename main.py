@@ -9,40 +9,33 @@ def main():
     #time in seconds to wait until next polling of price
     timeWait = 10
 
-    #amount of numbers to have in moving average array before
+    #amount of datapoints to have in moving average array before
     #making a decision
-    arrayCount = 6
-    #start off with getting current balances
-    #api.gatherPNL(api_url, auth)
-    #api.gatherPNL(api_url, auth)
+    arrayCount = 60
+
+    #need this to determine when to delete array
+    dataPerMinute = 60/timeWait
+    dataPerHour = dataPerMinute*60
 
     #begin aggregating our data for future smart decisions
     api.gatherMovingAverage(api_url)
 
-    #display a 60 second countdown for fun
+    #display a countdown for fun
     api.countdown(int(timeWait))
 
-    #if length of array is = 60, calculate the moving average
+    #if we have a proper array length (it is divisible by our arrayCount counter), calculate the moving average
+    #basically, if we gathered as much data as we wanted to, then the movingAverageArray should be divisble by the array counter
     if (len(movingAverageArray)/int(arrayCount)).is_integer():
         api.calculateMovingAverage(movingAverageArray, len(movingAverageArray))
 
-        #gather new PNL values for calculations
-        #api.gatherPNL(api_url, auth)
-        #api.gatherPNL(api_url, auth)
-
-        #calculate whether we are profiting or losing
-        #still haven't figured out how to track loss
-        #due to trading from USD to BTC or vice versa
-        #api.calculatePNL("BTC")
-        #api.calculatePNL("USD")
         api.getPortfolioBalance(api_url, auth)
 
         #create a live chart to display
         pC.create_chart()
 
-    #if the moving average array is greater than 12hours old (12*60 = 720) delete it
+    #if the moving average array is greater than 12hours old delete it
     #this is to avoid a perpetual cycle of buying or selling
-    elif (len(movingAverageArray)/int(720)).is_integer():
+    elif (len(movingAverageArray) > dataPerHour*12:
         del movingAverageArray[:]
 
     else:
