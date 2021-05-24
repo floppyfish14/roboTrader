@@ -322,11 +322,11 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
     #get current price of currency
     currentPrice = getCurrentPrice()
     #if (current price + 0.7%) is below the moving average, then buy
-    elif float(movingAverage) >= float(getCurrentPrice())*1.007:
+    if (float(movingAverage) >= float(getCurrentPrice())*1.007):
         print("Buying {} with 2% of total Fiat. Buying Amount in USD: {}".format(coin,buyingAmount), end="\r")
         buyOrder(api_url, auth, float(buyingAmount))
     #if current price is above (moving average * 0.7%), then sell
-    elif float(movingAverage)*1.007 <= float(currentPrice):
+    elif (float(movingAverage)*1.007 <= float(currentPrice)):
         print("Selling 2% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r")
         sellOrder(api_url, auth, float(sellingAmount))
         sellsPerHour += 1
