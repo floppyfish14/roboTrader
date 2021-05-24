@@ -35,6 +35,7 @@ def getAccounts(url, authentication):
     # [{"id": "a1b2c3d4", "balance":...
 
 def buyOrder(url, authentication, amount=100):
+    global buysPerHour
 
     #get balance first to make sure we have enough funds.
     totalUSD = getBalance(url, authentication, "USD")
@@ -69,9 +70,11 @@ def buyOrder(url, authentication, amount=100):
     r = requests.post(url + 'orders', data=order, auth=authentication)
     #print(r.status_code)
     #print(r.text)
+    buysPerHour += 1
     return r
 
 def sellOrder(url, authentication, amount=100):
+    global sellsPerHour
     #retrieve data about balances in accounts
     accounts = requests.get(url + 'accounts', auth=authentication)
     jsonData = json.loads(accounts.text)
@@ -108,6 +111,7 @@ def sellOrder(url, authentication, amount=100):
     r = requests.post(url + 'orders', data=order, auth=authentication)
     #print(r.status_code)
     #print(r.text)
+    sellsPerHour += 1
     return r
 
 def getPaymentMethods(url, authentication):
@@ -290,17 +294,12 @@ def countdown(t=60):
     return
 
 def sitOnIt():
-    global buysPerHour
-    global sellsPerHour
     #A function used to do nothing... sit on your earnings
     pC.clear_chart()
     print("I have bought or sold more than 5 times this hour.")
     print("I think I'll just wait for an hour.")
     countdown(3600)
     print("Okay, now that I've waited an hour. Let's play!")
-    del movingAverageArray[:]
-    buysPerHour = 0
-    sellsPerHour = 0
     return
 
 def determineOrder(movingAverage, currency="USD", coin="BTC"):
@@ -310,6 +309,8 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
     #call a do nothing function if we have sold or bought too much recently
     if(buysPerHour or sellsPerHour >= 5):
         sitOnIt()
+        buysPerHour = 0
+        sellsPerHour = 0
 
     #call getBalance so you can figure out how much to trade for
     totalFiat = getBalance(api_url, auth, currency)
@@ -324,7 +325,6 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
     if float(movingAverage) >= float(getCurrentPrice())*1.007:
         print("Buying {} with 2% of total Fiat. Buying Amount in USD: {}".format(coin,buyingAmount), end="\r")
         buyOrder(api_url, auth, float(buyingAmount))
-        buysPerHour += 1
     #if current price is above (moving average * 0.7%), then sell
     elif float(movingAverage)*1.007 <= float(currentPrice):
         print("Selling 2% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r")
