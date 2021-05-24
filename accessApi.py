@@ -290,13 +290,18 @@ def countdown(t=60):
     return
 
 def sitOnIt():
+    global buysPerHour
+    global sellsPerHour
     #A function used to do nothing... sit on your earnings
     pC.clear_chart()
-    print("I have bought and sold more than 5 times this hour.")
+    print("I have bought or sold more than 5 times this hour.")
     print("I think I'll just wait for an hour.")
     countdown(3600)
     print("Okay, now that I've waited an hour. Let's play!")
     del movingAverageArray[:]
+    buysPerHour = 0
+    sellsPerHour = 0
+    return
 
 def determineOrder(movingAverage, currency="USD", coin="BTC"):
     global buysPerHour
