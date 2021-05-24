@@ -22,6 +22,10 @@ dailyBTCArray = array.array('f', [])
 #create a portfolio balnce array for graphing
 portfolioValue = array.array('f', [])
 
+#keep a tally of buys and sells per hour
+#gonna use this as a stop limit
+buysPerHour = 0
+sellsPerHour = 0
 
 class CoinbaseExchangeAuth(AuthBase):
     def __init__(self, api_key, secret_key, passphrase):

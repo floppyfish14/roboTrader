@@ -18,3 +18,8 @@ def create_chart():
     plx.sleep(0.001)
     plx.show()
     return
+
+def clear_chart():
+    plx.clp()
+    plx.clt()
+    return

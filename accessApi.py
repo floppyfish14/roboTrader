@@ -22,6 +22,7 @@ ALL request bodies should have content type application/json and be valid json
 import pandas as pd
 
 from varData import *
+import profitChart as pC
 
 # Create custom authentication for Exchange
 
@@ -288,7 +289,23 @@ def countdown(t=60):
         t -= 1
     return
 
+def sitOnIt():
+    #A function used to do nothing... sit on your earnings
+    pC.clear_chart()
+    print("I have bought and sold more than 5 times this hour.")
+    print("I think I'll just wait for an hour.")
+    countdown(3600)
+    print("Okay, now that I've waited an hour. Let's play!")
+    del movingAverageArray[:]
+
 def determineOrder(movingAverage, currency="USD", coin="BTC"):
+    global buysPerHour
+    global sellsPerHour
+
+    #call a do nothing function if we have sold or bought too much recently
+    if(buysPerHour or sellsPerHour >= 5):
+        sitOnIt()
+
     #call getBalance so you can figure out how much to trade for
     totalFiat = getBalance(api_url, auth, currency)
     totalCoin = getBalance(api_url, auth, coin)
@@ -298,12 +315,18 @@ def determineOrder(movingAverage, currency="USD", coin="BTC"):
 
     #get current price of currency
     currentPrice = getCurrentPrice()
-    if float(movingAverage) >= float(getCurrentPrice()):
+    #if (current price + 0.7%) is below the moving average, then buy
+    if float(movingAverage) >= float(getCurrentPrice())*1.007:
         print("Buying {} with 2% of total Fiat. Buying Amount in USD: {}".format(coin,buyingAmount), end="\r")
         buyOrder(api_url, auth, float(buyingAmount))
-    if float(movingAverage) <= float(currentPrice):
+        buysPerHour += 1
+    #if current price is above (moving average * 0.7%), then sell
+    elif float(movingAverage)*1.007 <= float(currentPrice):
         print("Selling 2% of total {}. Selling Amount in {}: {}".format(coin,coin,sellingAmount),end="\r")
         sellOrder(api_url, auth, float(sellingAmount))
+        sellsPerHour += 1
+    else:
+        print("Doing nothing, did not meet criteria for a trade.",end="\r")
     return
 
 #getAccounts(api_url, auth)

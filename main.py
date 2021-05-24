@@ -12,7 +12,6 @@ def main():
     #amount of numbers to have in moving average array before
     #making a decision
     arrayCount = 6
-
     #start off with getting current balances
     #api.gatherPNL(api_url, auth)
     #api.gatherPNL(api_url, auth)
